@@ -7,29 +7,23 @@ import websockets
 
 
 #Para binarizar:
-from modules.binary.thresholding import apply_threshold
-from modules.binary.thresholding import apply_threshold_inv
-from modules.binary.thresholding import apply_threshold_trunc
-from modules.binary.thresholding import apply_threshold_tozero
-from modules.binary.thresholding import apply_threshold_tozero_inv
+from modules.binary.thresholding import apply_threshold, apply_threshold_inv, apply_threshold_trunc, apply_threshold_tozero, apply_threshold_tozero_inv
 
 
 
-
+#Para mudar cor
 from modules.colorConversion.transformations import to_grayscale, to_hsv
+
+#Para bordas
 from modules.contours.detection import detect_edges_canny
-from modules.filters.effects import apply_gaussian_blur
+
+#Para filtros
+from modules.filters.effects import apply_gaussian_blur, apply_median_blur
 
 
 
 # Para morfologia:
-from modules.morphology.operations import apply_dilation
-from modules.morphology.operations import apply_erosion
-from modules.morphology.operations import apply_open
-from modules.morphology.operations import apply_close
-from modules.morphology.operations import apply_grad
-from modules.morphology.operations import apply_tophat
-from modules.morphology.operations import apply_blackhat
+from modules.morphology.operations import apply_dilation, apply_erosion, apply_open, apply_close, apply_grad, apply_tophat, apply_blackhat
 
 
 
@@ -56,6 +50,7 @@ class ImageProcessor:
             "canny": detect_edges_canny,
             # Filtros
             "gaussian_blur": apply_gaussian_blur,
+            "median_blur": apply_median_blur,
             # Morfologia
             "dilate": apply_dilation,
             "erode": apply_erosion,
@@ -85,10 +80,10 @@ async def handler(websocket):
     try:
         async for message in websocket:
             try:
-                # 1. Parseia a mensagem JSON
+                # PEGA O JSON
                 data = json.loads(message)
 
-                # ✅ MUDANÇA CRÍTICA: Procuramos pela chave "pipeline"
+                #PEGA A PIPELINE
                 pipeline_steps = data.get("pipeline")
                 image_data = data.get("image")
 
@@ -96,7 +91,7 @@ async def handler(websocket):
                 if not pipeline_steps or not image_data:
                     continue
 
-                # 2. Decodifica a imagem Base64 (sem alterações aqui)
+                # TRANSOFRMA PARA O OPENCV TREATAR
                 header, encoded_data = image_data.split(",", 1)
                 image_bytes = base64.b64decode(encoded_data)
                 np_arr = np.frombuffer(image_bytes, np.uint8)
